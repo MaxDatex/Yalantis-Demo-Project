@@ -16,14 +16,8 @@ db = SQLAlchemy(app)
 
 ma = Marshmallow(app)
 
-course_post_args = reqparse.RequestParser()
-course_post_args.add_argument('title', type=str, help='Name required...', required=True)
-course_post_args.add_argument('start_date', type=str, help='Start date required...', required=True)
-course_post_args.add_argument('end_date', type=str, help='End date required...', required=True)
-course_post_args.add_argument('lectures', type=int, help='Number of lectures required...', required=True)
+title_args = reqparse.RequestParser()
+title_args.add_argument('title', type=str)
 
-course_put_args = reqparse.RequestParser()
-course_put_args.add_argument('title', type=str, help='Name required...')
-course_put_args.add_argument('start_date', type=str, help='Start date required...')
-course_put_args.add_argument('end_date', type=str, help='End date required...')
-course_put_args.add_argument('lectures', type=int, help='Number of lectures required...')
+date_args = reqparse.RequestParser()
+date_args.add_argument('start_date', type=str)
