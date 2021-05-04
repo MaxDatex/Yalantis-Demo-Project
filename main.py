@@ -8,8 +8,33 @@ api = Api(app)
 
 
 class Catalogue(Resource):
-    def get(self, id=0):
+    """
+    A class used to represent a catalogue of courses
 
+    Methods
+    -------
+    get(id=0)
+        Returns list of courses; filter by date; search by title.
+    post()
+        Adds input data to database. Returns location header with link.
+    put(id)
+        Updates course attributes with specified id.
+    delete(id)
+        Deletes course with cpecified id.
+    """
+
+    def get(self, id=0):
+        """
+        This method responds to a request for /courses and
+        /courses/<id> with complete list of courses or attributes
+        of specified course respectively
+
+        :param id: ID of course to find(default=0)
+        :return:   200 and course(s) info if success,
+                   404 if not found
+        """
+
+        # Check if id was passed
         if id == 0:
             courses = Course.query.all()
         else:
@@ -38,6 +63,7 @@ class Catalogue(Resource):
             course_schema = CourseSchema(many=True)
             return course_schema.dump(course)
 
+        # Get couse or courses if ID > 0
         if courses is not None:
             course_schema = CourseSchema(many=(True, False)[id > 0])
             course_data = course_schema.dump(courses)
@@ -47,6 +73,13 @@ class Catalogue(Resource):
                                 f'Course with ID[{id}] doesn\'t found!')[id > 0])
 
     def post(self):
+        """
+        This method creates a new course in catalogue
+        based on the passed course data
+
+        :return: location header with link to newly created course
+        """
+
         args = request.get_json(force=True)
 
         schema = CourseSchema()
@@ -59,16 +92,22 @@ class Catalogue(Resource):
         response.status_code = 201
         response.headers['location'] = f'/courses/{course.id}'
         return response
-        # return getJSONById(course.id, 201)
 
     def put(self, id):
+        """
+        This method updates an exitsting course in catalogue.
+
+        :param id: ID of course to update
+        :return:   200 and updated course on successful update,
+                   404 if not found
+        """
+
         course = Course.query.get(id)
         if course is not None:
             args = request.get_json()
             schema = CourseSchema()
             update = schema.load(args, session=db.session)
             update.id = id
-            print('UPD:', update, '\n', update.end_date)
 
             db.session.merge(update)
             db.session.commit()
@@ -77,6 +116,13 @@ class Catalogue(Resource):
             abort(404, message=f'Course not found for ID: {id}')
 
     def delete(self, id):
+        """
+        This method deletes a course from catalogu
+
+        :param id: ID of course to delete
+        :return:   200 on successful delete, 404 if not found
+        """
+
         course = Course.query.filter_by(id=id).one_or_none()
         print(course)
         if course is not None:
@@ -91,6 +137,14 @@ class Catalogue(Resource):
 
 
 def getJSONById(id, code=200):
+    """
+    This function creates response with course info
+
+    :param id: ID of course to read
+    :param code: code to return(default=200)
+    :return: status, code and course data
+    """
+
     result = Course.query.filter_by(id=id).one_or_none()
     course_schema = CourseSchema()
     return {'status': 'success', 'data': course_schema.dump(result)}, code
