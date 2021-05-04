@@ -1,10 +1,16 @@
-from flask import request, jsonify
+from flask import request, jsonify, make_response
 from flask_restful import Api, Resource, abort
 from models import Course, CourseSchema
 from config import app, db, title_args, date_args
 from datetime import date
+from helper import validate_args
+import os
 
 api = Api(app)
+
+
+if not os.path.exists('courses.db'):
+    db.create_all()
 
 
 class Catalogue(Resource):
@@ -34,11 +40,13 @@ class Catalogue(Resource):
                    404 if not found
         """
 
-        # Check if id was passed
+        # Check if  (valid) id was passed
         if id == 0:
             courses = Course.query.all()
-        else:
+        elif id > 0:
             courses = Course.query.filter_by(id=id).one_or_none()
+        else:
+            abort(400, message='Bad ID...')
 
         # Search
         search_query = title_args.parse_args()
@@ -82,14 +90,18 @@ class Catalogue(Resource):
 
         args = request.get_json(force=True)
 
+        # Validating data
+        good, args = validate_args(args)
+        if not good:
+            abort(400, message=args)
+
         schema = CourseSchema()
         course = schema.load(args, session=db.session)
 
         db.session.add(course)
         db.session.commit()
 
-        response = jsonify()
-        response.status_code = 201
+        response = make_response((schema.dump(course), 201))
         response.headers['location'] = f'/courses/{course.id}'
         return response
 
@@ -105,13 +117,19 @@ class Catalogue(Resource):
         course = Course.query.get(id)
         if course is not None:
             args = request.get_json()
+
+            # Validating data
+            good, args = validate_args(args, method='put')
+            if not good:
+                abort(400, message=args)
+
             schema = CourseSchema()
             update = schema.load(args, session=db.session)
             update.id = id
 
             db.session.merge(update)
             db.session.commit()
-            return getJSONById(id)
+            return get_JSON_by_id(id)
         else:
             abort(404, message=f'Course not found for ID: {id}')
 
@@ -136,7 +154,7 @@ class Catalogue(Resource):
             abort(404, message=f'Course not found for ID: {id}')
 
 
-def getJSONById(id, code=200):
+def get_JSON_by_id(id, code=200):
     """
     This function creates response with course info
 
@@ -150,7 +168,7 @@ def getJSONById(id, code=200):
     return {'status': 'success', 'data': course_schema.dump(result)}, code
 
 
-api.add_resource(Catalogue, '/courses', '/courses/<int:id>')
+api.add_resource(Catalogue, '/courses', '/courses/', '/courses/<int:id>')
 
 if __name__ == '__main__':
     app.run(debug=True)
