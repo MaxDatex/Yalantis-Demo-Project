@@ -9,6 +9,7 @@ import os
 api = Api(app)
 
 
+# If DB doesn't exist -> create DB
 if not os.path.exists('courses.db'):
     db.create_all()
 

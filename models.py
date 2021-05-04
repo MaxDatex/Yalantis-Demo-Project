@@ -4,6 +4,8 @@ from datetime import date
 
 
 class Course(db.Model):
+    """Create table with specified colunms"""
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     start_date = db.Column(db.Date, default=date.today())
