@@ -1,4 +1,7 @@
-flask
+flask==1.1.2
 flask-sqlalchemy
 flask-marshmallow
 flask-restful
+marshmallow
+sqlalchemy
+marshmallow-sqlalchemy
