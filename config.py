@@ -21,7 +21,7 @@ db = SQLAlchemy(app)
 ma = Marshmallow(app)
 
 title_args = reqparse.RequestParser()
-title_args.add_argument('q', type=str)
+title_args.add_argument('title', type=str)
 
 date_args = reqparse.RequestParser()
 date_args.add_argument('start_date', type=str)

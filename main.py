@@ -51,10 +51,10 @@ class Catalogue(Resource):
 
         # Search
         search_query = title_args.parse_args()
-        if search_query['q'] is not None:
+        if search_query['title'] is not None:
             course = db.session.query(Course).\
                 filter(Course.title.ilike(
-                    '%' + search_query['q'] + '%')).all()
+                    '%' + search_query['title'] + '%')).all()
 
             course_schema = CourseSchema(many=True)
             if course:
